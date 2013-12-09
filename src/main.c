@@ -3,21 +3,24 @@
 #include <string.h>
 #include "malloc.h"
 
+#define malloc(x) my_malloc(x, __FILE__, __LINE__)
+
 int main(int argc, char **argv) {
-  char *test = my_malloc(10);
+  char *test = malloc(10);
   strcpy(test, "foo");
-  printf("%s\n", test);
+/*  printf("%s\n", test);*/
 
-  printList();
-/*  my_free(test);*/
+  my_free(test);
 
-  char *test2 = my_malloc(30);
+  char *test2 = malloc(30);
   strcpy(test2, "food");
-  printf("%s\n", test2);
+/*  printf("%s\n", test2);*/
 
-/*  my_free(test2);*/
+  my_free(test2);
+  my_free(test2);
 
-  printList();
+  test = malloc(50000);
+  my_free((void*)4000000);
 
   return 0;
 }

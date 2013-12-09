@@ -4,13 +4,13 @@ CFILES=./src/main.c
 
 
 all:
-		$(CC) $(CFILES)  -o ???
+		$(CC) $(CFILES)  -o main
 
 HARDCORE:
-		$(CC) $(CFILES) $(HARDCORE) -o ???
+		$(CC) $(CFILES) $(HARDCORE) -o main
 
 debug:
-		$(CC) -g $(CFILES)  $(CFLAGS) -o ???
+		$(CC) -g $(CFILES)  $(CFLAGS) -o main
 
 clean:
-		rm ???
+		rm main
