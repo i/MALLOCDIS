@@ -71,6 +71,7 @@ void *my_malloc(unsigned int size, char *file, unsigned int line) {
 /* Compresses the heap recognizing adjacent free blocks */
 void compress(block *p) {
   block *t;
+
   if (p && p->next && p->next->free) { /* If block to the right is free, merge with it! */
     p->size += p->next->size;
     t = p->next;
@@ -91,11 +92,17 @@ void compress(block *p) {
 
 
 /* Prints out every block in the "heap" */
-void printList() {
+void printList(int line, int expectedBlocks) {
   block *p;
-  for (p = head; p != NULL; p = p->next)
-    printf("OFFSET: %d, SIZE: %d, PHYSICAL ADDRESS: %p\n", p->offset, p->size, arry + p->offset);
-  printf("====\n");
+  int actualBlocks = 0;
+
+  printf("Line number: %d | Expected blocks: %d\n", line, expectedBlocks);
+  for (p = head; p != NULL; p = p->next, actualBlocks++) {
+    printf("  STATUS: %4s, OFFSET: %4d, SIZE: %4d, PHYSICAL ADDRESS: %p\n",
+        (p->free ? "FREE" : "USED"), p->offset, p->size, arry + p->offset);
+  }
+  printf("Actual blocks: %d, Outcome: %s\n\n", actualBlocks,
+      (expectedBlocks == actualBlocks ? "PASS" : "FAIL"));
 }
 
 /* Frees a block enabling it to be allocated again */
