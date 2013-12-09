@@ -1,3 +1,9 @@
+/* malloc.h
+ * Authors: Ian Lozinski, Edward Zaneski
+ * 12/9/2013
+ * CS214
+ */
+
 #include <stdlib.h>
 
 #define heap_size 5000
@@ -45,7 +51,6 @@ void *my_malloc(unsigned int size, char *file, unsigned int line) {
       if (p == head) {
         head = t;
       } else {
-        /*        fprintf(stderr, "p->prev->next = t segfault;");*/
         p->prev->next = t;
       }
 
@@ -59,13 +64,35 @@ void *my_malloc(unsigned int size, char *file, unsigned int line) {
 
   /* Getting here means we don't have a block of big enough space */
   fprintf(stderr, "ERROR: Not enough free space at %s:%d\n", file, line);
-  /* TODO Return different error codes */
   return NULL;
 }
 
+
+/* Compresses the heap recognizing adjacent free blocks */
+void compress(block *p) {
+  block *t;
+  if (p && p->next && p->next->free) { /* If block to the right is free, merge with it! */
+    p->size += p->next->size;
+    t = p->next;
+    p->next = p->next->next;
+    destroy_node(t);              /* Clean up by destroying the node out of work */
+    compress(p->next);
+  }
+  if (p && p->prev && p->prev->free) { /* If adjacent blocks are free, merge them! */
+    p->prev->size += p->size;
+    p->prev->next = p->next;
+    t = p->prev;
+    destroy_node(p);              /* Clean up by destroying the node out of work */
+    compress(t);
+  }
+}
+
+
+
+
+/* Prints out every block in the "heap" */
 void printList() {
   block *p;
-
   for (p = head; p != NULL; p = p->next)
     printf("OFFSET: %d, SIZE: %d, PHYSICAL ADDRESS: %p\n", p->offset, p->size, arry + p->offset);
 }
@@ -75,36 +102,22 @@ void my_free(void *foo, char *file, unsigned int line) {
   block *p, *t;
   int offset = foo - (void *)arry;
   int i = 0;
-/*  printf("Attempting to free from offset : %d\n", offset);*/
 
   /* Check every block to see if it's the target */
   for (p = head; p != NULL; p = p->next) {
-/*    printf("OFFSET: %d\n", p->offset);*/
     if (p->offset == offset) {
       if (p->free) {
         fprintf(stderr, "INVALID FREE: Already free!\n");
         return;
       }
       p->free = 1;                    /* Disable the lock on the block */
-      if (p->next && p->next->free) { /* If adjacent blocks are free, merge them! */
-/*        printf("Compressing with next block\n");*/
-        p->size += p->next->size;
-        t = p->next;
-        p->next = p->next->next;
-        destroy_node(t);              /* Clean up by destroying the node out of work */
-      }
-      if (p->prev && p->prev->free) { /* If adjacent blocks are free, merge them! */
-/*        printf("Compressing with prev block\n");*/
-        p->prev->size += p->size;
-        p->prev->next = p->next;
-        destroy_node(p);              /* Clean up by destroying the node out of work */
-      }
+      compress(p);
       return;
     }
   }
 
+  /* Getting here means we tried to free something that wasn't malloc'd */
   fprintf(stderr, "ERROR: Invalid free (space not allocated) at file: %s:%d\n", file, line);
 
-  /* Getting here means we tried to free something that wasn't malloc'd */
-  /* TODO error code */
 }
+
