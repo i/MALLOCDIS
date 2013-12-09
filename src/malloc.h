@@ -95,6 +95,7 @@ void printList() {
   block *p;
   for (p = head; p != NULL; p = p->next)
     printf("OFFSET: %d, SIZE: %d, PHYSICAL ADDRESS: %p\n", p->offset, p->size, arry + p->offset);
+  printf("====\n");
 }
 
 /* Frees a block enabling it to be allocated again */

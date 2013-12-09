@@ -7,21 +7,20 @@
 #define free(x) my_free(x, __FILE__, __LINE__)
 
 int main(int argc, char **argv) {
-  char *test = malloc(10);
-  strcpy(test, "foo");
-/*  printf("%s\n", test);*/
-
-  free(test);
+  char *test1 = malloc(10);
+  printList();
 
   char *test2 = malloc(30);
-  strcpy(test2, "food");
-/*  printf("%s\n", test2);*/
+  printList();
 
-  free(test2);
-  free(test2);
+  char *test3 = malloc(30);
+  printList();
 
-  test = malloc(50000);
-  free((void*)4000000);
+  free(test3);
+  free(test3);
+  free(test1);
+  free(test2);
+  printList();
 
   return 0;
 }
