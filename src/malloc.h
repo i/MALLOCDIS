@@ -8,7 +8,7 @@
 
 #define heap_size 5000
 
-char arry[heap_size];
+char heap[heap_size];
 
 typedef struct block_ {
   unsigned int offset;
@@ -20,6 +20,7 @@ typedef struct block_ {
 
 block *head = NULL;
 
+/* Destroys a node */
 void destroy_node(block *n) {
   free(n);
 }
@@ -27,6 +28,7 @@ void destroy_node(block *n) {
 void *my_malloc(unsigned int size, char *file, unsigned int line) {
   int i;
   block *p, *t;
+
   /* This should happen the first time we malloc and create the block list */
   if (head == NULL) {
     head = malloc(sizeof(block));
@@ -58,7 +60,7 @@ void *my_malloc(unsigned int size, char *file, unsigned int line) {
       p->offset += size;
       p->size -= size;
 
-      return arry + t->offset;
+      return heap + t->offset;
     }
   }
 
@@ -68,7 +70,7 @@ void *my_malloc(unsigned int size, char *file, unsigned int line) {
 }
 
 
-/* Compresses the heap recognizing adjacent free blocks */
+/* Recursively merges block p with all adjacent free blocks */
 void compress(block *p) {
   block *t;
 
@@ -79,6 +81,7 @@ void compress(block *p) {
     destroy_node(t);              /* Clean up by destroying the node out of work */
     compress(p->next);
   }
+
   if (p && p->prev && p->prev->free) { /* If adjacent blocks are free, merge them! */
     p->prev->size += p->size;
     p->prev->next = p->next;
@@ -89,18 +92,18 @@ void compress(block *p) {
 }
 
 
-/* Prints out every block in the "heap" */
+/* Prints out every block in the heap */
 /* Also checks the number of blocks match what is expected */
 void printList(int line, int expectedBlocks) {
   block *p;
   int actualBlocks = 0;
 
-  printf("Line number: %d\n", line);
+  printf("\nLine number: %d\n", line);
   for (p = head; p != NULL; p = p->next, actualBlocks++) {
-    printf("  STATUS: %4s, OFFSET: %4d, SIZE: %4d, PHYSICAL ADDRESS: %p\n",
-        (p->free ? "FREE" : "USED"), p->offset, p->size, arry + p->offset);
+    printf("STATUS: %4s, OFFSET: %4d, SIZE: %4d, PHYSICAL ADDRESS: %p\n",
+        (p->free ? "FREE" : "USED"), p->offset, p->size, heap + p->offset);
   }
-  printf("Actual blocks: %d| Expected blocks: %d\nOutcome: %s\n\n",
+  printf("Actual blocks: %d | Expected blocks: %d\nOutcome: %s\n\n",
       actualBlocks, expectedBlocks, (expectedBlocks == actualBlocks ? "PASS" : "FAIL"));
 }
 
@@ -109,7 +112,7 @@ void printList(int line, int expectedBlocks) {
 /* Merges newly freed block with adjacent free blocks */
 void my_free(void *foo, char *file, unsigned int line) {
   block *p, *t;
-  int offset = foo - (void *)arry, i = 0;
+  int offset = foo - (void *)heap, i = 0;
 
   /* Check every block to see if it's the target */
   for (p = head; p != NULL; p = p->next) {

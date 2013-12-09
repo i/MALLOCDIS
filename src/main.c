@@ -8,6 +8,8 @@
 #define printList(x) printList(__LINE__, x)
 
 int main(int argc, char **argv) {
+  printList(0);  /* Should have one block, one in use */
+
   char *test1 = malloc(10);
   printList(2); /* Should have two blocks, one in use */
 
@@ -21,7 +23,9 @@ int main(int argc, char **argv) {
   printList(4);  /* Should have four blocks, two in use */
   free(test2);  /* Should free fine */
   free(test3);  /* Should free fine */
+  free(test3);  /* Should throw error */
 
+  printList(1);  /* Should have one block, one in use */
   printList(1);  /* Should have one block, one in use */
 
 }
