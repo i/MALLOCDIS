@@ -58,7 +58,7 @@ void *my_malloc(unsigned int size, char *file, unsigned int line) {
   }
 
   /* Getting here means we don't have a block of big enough space */
-  fprintf(stderr, "ERROR: Not enough free space at line: %d in file: %s\n", line, file);
+  fprintf(stderr, "ERROR: Not enough free space at %s:%d\n", file, line);
   /* TODO Return different error codes */
   return NULL;
 }
@@ -69,33 +69,13 @@ void printList() {
   for (p = head; p != NULL; p = p->next)
     printf("OFFSET: %d, SIZE: %d, PHYSICAL ADDRESS: %p\n", p->offset, p->size, arry + p->offset);
 }
-/*
-[0,0,0,0,0]
-  head.offset = 0
-  head.size = 5
-[x,0,0,0,0]
-  head.offset = 1
-  head.size = 4
-[x,y,0,0,0]
-  head.offset = 2
-  head.size = 3
-[0,y,0,0,0]
-  head.offset = 2
-  head.size = 3
-  head.next.offset = 0
-  head.next.size = 1
-
-[0, 0, y, 0, 0]
-
-[x, 0, y, 0, 0]
-*/
 
 /* Frees a block enabling it to be allocated again */
-void my_free(void *foo) {
+void my_free(void *foo, char *file, unsigned int line) {
   block *p, *t;
   int offset = foo - (void *)arry;
   int i = 0;
-  printf("Attempting to free from offset : %d\n", offset);
+/*  printf("Attempting to free from offset : %d\n", offset);*/
 
   /* Check every block to see if it's the target */
   for (p = head; p != NULL; p = p->next) {
@@ -107,24 +87,23 @@ void my_free(void *foo) {
       }
       p->free = 1;                    /* Disable the lock on the block */
       if (p->next && p->next->free) { /* If adjacent blocks are free, merge them! */
-        printf("Compressing with next block\n");
+/*        printf("Compressing with next block\n");*/
         p->size += p->next->size;
         t = p->next;
         p->next = p->next->next;
         destroy_node(t);              /* Clean up by destroying the node out of work */
       }
       if (p->prev && p->prev->free) { /* If adjacent blocks are free, merge them! */
-        printf("Compressing with prev block\n");
+/*        printf("Compressing with prev block\n");*/
         p->prev->size += p->size;
         p->prev->next = p->next;
         destroy_node(p);              /* Clean up by destroying the node out of work */
       }
-      printf("Freed at 0x%p\n", foo);
       return;
     }
   }
 
-  fprintf(stderr, "INVALID FREE: Space not allocated\n");
+  fprintf(stderr, "ERROR: Invalid free (space not allocated) at file: %s:%d\n", file, line);
 
   /* Getting here means we tried to free something that wasn't malloc'd */
   /* TODO error code */
