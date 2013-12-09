@@ -37,7 +37,7 @@ void *my_malloc(unsigned int size, char *file, unsigned int line) {
     head->free = 1;
   }
 
-  /* Iterate through to find a block that size fits into */
+  /* Iterate through to find a block that can accomodate size */
   for (p = head; p != NULL; p = p->next) {
     if (p->free && p->size >= size) {       /* Found suitable block */
 
@@ -89,27 +89,27 @@ void compress(block *p) {
 }
 
 
-
-
 /* Prints out every block in the "heap" */
+/* Also checks the number of blocks match what is expected */
 void printList(int line, int expectedBlocks) {
   block *p;
   int actualBlocks = 0;
 
-  printf("Line number: %d | Expected blocks: %d\n", line, expectedBlocks);
+  printf("Line number: %d\n", line);
   for (p = head; p != NULL; p = p->next, actualBlocks++) {
     printf("  STATUS: %4s, OFFSET: %4d, SIZE: %4d, PHYSICAL ADDRESS: %p\n",
         (p->free ? "FREE" : "USED"), p->offset, p->size, arry + p->offset);
   }
-  printf("Actual blocks: %d, Outcome: %s\n\n", actualBlocks,
-      (expectedBlocks == actualBlocks ? "PASS" : "FAIL"));
+  printf("Actual blocks: %d| Expected blocks: %d\nOutcome: %s\n\n",
+      actualBlocks, expectedBlocks, (expectedBlocks == actualBlocks ? "PASS" : "FAIL"));
 }
 
-/* Frees a block enabling it to be allocated again */
+
+/* Frees a block so that it can be allocated again */
+/* Merges newly freed block with adjacent free blocks */
 void my_free(void *foo, char *file, unsigned int line) {
   block *p, *t;
-  int offset = foo - (void *)arry;
-  int i = 0;
+  int offset = foo - (void *)arry, i = 0;
 
   /* Check every block to see if it's the target */
   for (p = head; p != NULL; p = p->next) {
