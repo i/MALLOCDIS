@@ -3,6 +3,8 @@
  * 12/9/2013
  * CS214
  */
+#ifndef MALLOC_H
+#define MALLOC_H
 
 #include <stdlib.h>
 
@@ -132,3 +134,4 @@ void my_free(void *foo, char *file, unsigned int line) {
 
 }
 
+#endif
